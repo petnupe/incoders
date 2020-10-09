@@ -1,0 +1,6 @@
+{
+    "name": "peterson/root",
+    "require": {
+        "rochasmarcelo/emailmd": "dev-master"
+    }
+}
