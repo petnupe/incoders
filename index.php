@@ -5,6 +5,8 @@
 <button onclick="window.open('./index.php', '_self');">Enviar email</button>
 <?php
 
+//set_time_limit(300);
+ini_set('allow_url_fopen', 0);
 DEFINE('SERVER', 'imap.gmail.com');
 DEFINE('PORT', '993');
 DEFINE('USER', 'rrdasoliveiras@gmail.com');
@@ -17,6 +19,13 @@ class MailReader
 
     public function __construct()
     {
+
+
+
+$this->saveData();
+
+die();
+
         $this->mailBox = imap_open("{" . SERVER . ":" . PORT . "/imap/ssl/novalidate-cert}INBOX", USER, PASS);
         $errors = imap_errors();
 
@@ -24,7 +33,6 @@ class MailReader
             $this->showErrors($errors);
         } else {
             $this->Read();
-
             if (is_array($this->final))
                 $this->saveData();
         }
@@ -67,19 +75,49 @@ class MailReader
 
     private function saveData()
     {
-        $data =  html_entity_decode((json_encode($this->final, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)));
-        $host = "http://localhost:8080/saveData.php?dados=" . $data;
+        $this->final = array('nome' => 'peterosn', "sobre" => "pedroso");
+        $data =  json_encode($this->final, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 
-        die($host);
-        fopen($data, 'r');
+    $ch = curl_init('http://localhost:8888/saveData.php');
+    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json', 'Content-Length: ' . strlen($data)));  
+
+ini_set('display_errors', 1);
+error_reporting(~0);
+$result = curl_exec($ch);
+if ($result === false) {
+        throw new Exception(curl_error($ch), curl_errno($ch));
+    }
+curl_close($ch);
+var_dump($result);
+
+      die('passando');
+        //die($url);
+        /*
+        $options = array(
+                    'http' => 
+                    array(
+                        'method'  => 'POST', 
+                        'content' => $data,
+                        'header'  =>  "Content-Type: application/json\r\n" . "Accept: application/json\r\n"
+                    )
+            );
+
+        $context = stream_context_create($options);
+        */
+
+        $return = file_get_contents($url);
+
+    die($return);
     }
 }
 
-ini_set('display_errors', 1);
-error_reporting(E_ALL);
+
 if (isset($_REQUEST['modo'])) {
     $read = new MailReader();
     $read->Read();
 } else {
-    include_once("./sendMail.php");
+    //include_once("./sendMail.php");
 }
