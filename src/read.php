@@ -1,10 +1,5 @@
 <?php
-
-
-die('poota');
 getConfig();
-set_time_limit(0);
-ini_set('allow_url_fopen', 0);
 
 
 class MailReader
@@ -62,48 +57,41 @@ class MailReader
         $ini = strpos($texto, "Nome");
         $fim = stripos($texto, "Att.");
 
-        $conteudo = substr($texto, $ini, ($fim - $ini));
+        $content = substr($texto, $ini, ($fim - $ini));
 
-        $parse = str_replace(':', '=', $conteudo);
+        $parse = str_replace(':', '=', $content);
         return $parse;
     }
 
     private function saveData() : void
     {
         $data =  strip_tags(json_encode($this->final, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
-        $ch = curl_init('http://localhost/saveData.php');
-        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
-        curl_setopt($ch, CURLOPT_PORT, "8080");
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json', 'Content-Length: ' . strlen($data))); 
-        $result = curl_exec($ch);
+        $curlInit = curl_init('http://localhost/saveData.php');
+        curl_setopt($curlInit, CURLOPT_CUSTOMREQUEST, "POST");
+        curl_setopt($curlInit, CURLOPT_PORT, PORT_IMAP);
+        curl_setopt($curlInit, CURLOPT_POSTFIELDS, $data);
+        curl_setopt($curlInit, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($curlInit, CURLOPT_HTTPHEADER, array('Content-Type: application/json', 'Content-Length: ' . strlen($data))); 
+        $result = curl_exec($curlInit);
         if ($result === false) {
-            throw new Exception(curl_error($ch), curl_errno($ch));
+            throw new Exception(curl_error($curlInit), curl_errno($curlInit));
         }
-
         echo $result;
-        
-        curl_close($ch);
+        curl_close($curlInit);
     }
 }
 
 function getConfig() {
-
-$dados = parse_ini_file('./config/config.ini');
-
-var_dump($dados);
-
-DEFINE('SERVER', 'imap.gmail.com');
-DEFINE('PORT', '993');
-DEFINE('USER', 'petersontesteicrs@gmail.com');
-DEFINE('PASS', 'incoders2020');
-
+    set_time_limit(0);
+    $cfgData = parse_ini_file('./config/config.ini');
+    foreach ($cfgData as $key => $value) {
+        define($key, $value);
+    }
 }
-/*
+
 while (1 == 1) {
     $read = new MailReader();
-    sleep(5);
+    sleep(TIME_READ);
 }
-*/
+
 //$read = new MailReader();
