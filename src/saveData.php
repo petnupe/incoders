@@ -22,7 +22,9 @@ class SaveData
 
 	private function saveFile($file, $fileName) : void 
 	 {
-	    $fp = fopen("../files/{$fileName}","a+");
+	 	$path = "../files";
+	 	!is_dir($path) ? mkdir($path, 0700) : null;
+	    $fp = fopen("$path/{$fileName}","a+");
 	    fwrite($fp, imap_base64($file));
 	    fclose($fp);
 	    echo "Anexo {$fileName} salvo com sucesso" . PHP_EOL;
