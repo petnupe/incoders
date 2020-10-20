@@ -1,7 +1,0 @@
-{
-    "name": "peterson/root",
-    "require": {
-        "rochasmarcelo/emailmd": "dev-master",
-        "phpmailer/phpmailer": "^6.1"
-    }
-}
