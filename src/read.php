@@ -1,7 +1,6 @@
 <?php
 getConfig();
 
-
 class MailReader
 {
     public $mailBox = null;
@@ -27,20 +26,21 @@ class MailReader
     public  function Read()
     {
         if ($this->mailBox) {
-            $unseenMessages = @imap_search($this->mailBox, 'UNSEEN'); //UNSEEN
+            $unseenMessages = @imap_search($this->mailBox, TYPE_MESSAGES); //UNSEEN
 
             if (is_array($unseenMessages) > 0) {
                 foreach ($unseenMessages as $message) {
-                    
                     $body = quoted_printable_decode(imap_fetchbody($this->mailBox, $message, 1));
-                    if (imap_base64(imap_fetchbody($this->mailBox, $message,2))) {
-                        $this->final[] = parse_ini_string($this->searchText($body));
+                    $file = imap_fetchbody($this->mailBox, $message, 2);
+                    if (trim($file)) {
+                        $struct = imap_fetchstructure($this->mailBox, $message);
+                        $fileName = $struct->parts[1]->dparameters[0]->value;
+                        $this->final[] = array("text" => parse_ini_string($this->searchText($body)), "fileName" => $fileName, "file" => $file);
                     } else {
                         echo "E-mail sem anexo" . PHP_EOL;
                     }
                 }
             }
-
             @imap_close($this->mailBox); //, CL_EXPUNGE
         }
     }
@@ -56,16 +56,14 @@ class MailReader
     {
         $ini = strpos($texto, "Nome");
         $fim = stripos($texto, "Att.");
-
         $content = substr($texto, $ini, ($fim - $ini));
-
         $parse = str_replace(':', '=', $content);
         return $parse;
     }
 
     private function saveData() : void
     {
-        $data =  strip_tags(json_encode($this->final, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
+        $data =  json_encode($this->final);
         $curlInit = curl_init('http://localhost/saveData.php');
         curl_setopt($curlInit, CURLOPT_CUSTOMREQUEST, "POST");
         curl_setopt($curlInit, CURLOPT_PORT, PORT_IMAP);
@@ -89,9 +87,7 @@ function getConfig() {
     }
 }
 
-while (1 == 1) {
-    $read = new MailReader();
+while (true) {
+    new MailReader();
     sleep(TIME_READ);
 }
-
-//$read = new MailReader();
