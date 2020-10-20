@@ -13,7 +13,7 @@ class SaveData
 			$valor = preg_replace( '/([^\d,])/',  '', $value->text->Valor);
 			$valor = preg_replace('/[,]+/', ',', $valor);
 			$fileName = date('Ymdhis')."-".$value->fileName;
-			fwrite($fp, "{$value->text->Nome};{$value->text->Endereço};{$valor};{$value->text->Vencimento};{$fileName}\n");
+			fwrite($fp, utf8_decode("{$value->text->Nome};{$value->text->Endereço};{$valor};{$value->text->Vencimento};{$fileName}\n"));
 			echo "Registro salvo com sucesso!".PHP_EOL;
 			$this->saveFile($value->file, $fileName);
 		}
